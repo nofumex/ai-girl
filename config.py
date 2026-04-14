@@ -67,6 +67,8 @@ class Config:
     GROQ_API_KEY_3: str | None = os.getenv("GROQ_API_KEY_3")
     CEREBRAS_API_KEY: str | None = os.getenv("CEREBRAS_API_KEY")
     SILICONFLOW_API_KEY: str | None = os.getenv("SILICONFLOW_API_KEY")
+    SILICONFLOW_API_KEY_2: str | None = os.getenv("SILICONFLOW_API_KEY_2")
+    SILICONFLOW_API_KEY_3: str | None = os.getenv("SILICONFLOW_API_KEY_3")
 
     LLM_PROXY: str | None = os.getenv("LLM_PROXY")
 
@@ -85,6 +87,12 @@ class Config:
     MODEL_SILICONFLOW: str = os.getenv("MODEL_SILICONFLOW", "openai/zai-org/GLM-5.1")
     MODEL_SILICONFLOW_2: str = os.getenv("MODEL_SILICONFLOW_2", "openai/MiniMaxAI/MiniMax-M2.5")
     MODEL_SILICONFLOW_3: str = os.getenv("MODEL_SILICONFLOW_3", "openai/deepseek-ai/DeepSeek-V3.2")
+    MODEL_SILICONFLOW_4: str = os.getenv("MODEL_SILICONFLOW_4", "openai/zai-org/GLM-5.1")
+    MODEL_SILICONFLOW_5: str = os.getenv("MODEL_SILICONFLOW_5", "openai/MiniMaxAI/MiniMax-M2.5")
+    MODEL_SILICONFLOW_6: str = os.getenv("MODEL_SILICONFLOW_6", "openai/deepseek-ai/DeepSeek-V3.2")
+    MODEL_SILICONFLOW_7: str = os.getenv("MODEL_SILICONFLOW_7", "openai/zai-org/GLM-5.1")
+    MODEL_SILICONFLOW_8: str = os.getenv("MODEL_SILICONFLOW_8", "openai/MiniMaxAI/MiniMax-M2.5")
+    MODEL_SILICONFLOW_9: str = os.getenv("MODEL_SILICONFLOW_9", "openai/deepseek-ai/DeepSeek-V3.2")
     # Vision models (for image analysis only)
     MODEL_SILICONFLOW_VISION: str = os.getenv("MODEL_SILICONFLOW_VISION", "Qwen/Qwen2.5-VL-72B-Instruct")
     MODEL_SILICONFLOW_VISION_2: str = os.getenv("MODEL_SILICONFLOW_VISION_2", "Qwen/Qwen2.5-VL-32B-Instruct")
@@ -150,10 +158,12 @@ class Config:
                 cls.GEMINI_API_KEY_2,
                 cls.GEMINI_API_KEY_3,
                 cls.GROQ_API_KEY,
-                cls.GROQ_API_KEY_2,
+cls.GROQ_API_KEY_2,
                 cls.GROQ_API_KEY_3,
                 cls.CEREBRAS_API_KEY,
                 cls.SILICONFLOW_API_KEY,
+                cls.SILICONFLOW_API_KEY_2,
+                cls.SILICONFLOW_API_KEY_3,
             ]
         ):
             errors.append("At least one LLM API key should be set for fallback chain")

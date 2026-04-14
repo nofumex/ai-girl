@@ -260,7 +260,17 @@ def register(client: TelegramClient) -> None:
             reply = None
 
         if not reply:
-            reply = str(state.get("static_message") or "сейчас не могу ответить, потом напишу")
+            user_preview = user_block[:100] if len(user_block) > 100 else user_block
+            chat_name = chat_title or f"chat {chat_id}"
+            sender_display = sender_name or f"user {sender_id}"
+            alert_msg = f"⚠️ LLM failed for {sender_display} in {chat_name}\n\nMessage: {user_preview}"
+            if Config.OWNER_ID:
+                try:
+                    await client.send_message(Config.OWNER_ID, alert_msg)
+                    logger.info("Sent LLM failure alert to owner for chat %s", chat_id)
+                except Exception as alert_exc:
+                    logger.warning("Failed to send LLM failure alert to owner: %s", alert_exc)
+            return
 
         try:
             sent_bubbles = await _send_batched_humanlike(

@@ -35,12 +35,10 @@ def _strip_provider_prefix(model: str, prefix: str) -> str:
 
 
 def _base_kwargs() -> dict[str, Any]:
-    kwargs: dict[str, Any] = {}
     if Config.LLM_PROXY:
-        kwargs["proxy"] = Config.LLM_PROXY
         os.environ["HTTPS_PROXY"] = Config.LLM_PROXY
         os.environ["HTTP_PROXY"] = Config.LLM_PROXY
-    return kwargs
+    return {}
 
 
 _llm_kwargs = {}
@@ -79,30 +77,31 @@ def _provider_specs() -> list[tuple[str, str, dict[str, Any]]]:
             )
         )
         if Config.MODEL_SILICONFLOW_2:
+            api_key_2 = Config.SILICONFLOW_API_KEY_2 or Config.SILICONFLOW_API_KEY
             specs.append(
                 (
                     "siliconflow2",
                     Config.MODEL_SILICONFLOW_2,
                     {
-                        "api_key": Config.SILICONFLOW_API_KEY,
+                        "api_key": api_key_2,
                         "api_base": Config.SILICONFLOW_API_BASE,
                         "custom_llm_provider": "openai",
                     },
                 )
             )
         if Config.MODEL_SILICONFLOW_3:
+            api_key_3 = Config.SILICONFLOW_API_KEY_3 or Config.SILICONFLOW_API_KEY
             specs.append(
                 (
                     "siliconflow3",
                     Config.MODEL_SILICONFLOW_3,
                     {
-                        "api_key": Config.SILICONFLOW_API_KEY,
+                        "api_key": api_key_3,
                         "api_base": Config.SILICONFLOW_API_BASE,
                         "custom_llm_provider": "openai",
                     },
                 )
             )
-        # Vision models (separate from text models)
         if Config.MODEL_SILICONFLOW_VISION:
             specs.append(
                 (
@@ -116,17 +115,92 @@ def _provider_specs() -> list[tuple[str, str, dict[str, Any]]]:
                 )
             )
         if Config.MODEL_SILICONFLOW_VISION_2:
+            api_key_v2 = Config.SILICONFLOW_API_KEY_2 or Config.SILICONFLOW_API_KEY
             specs.append(
                 (
                     "siliconflow_vision2",
                     Config.MODEL_SILICONFLOW_VISION_2,
                     {
-                        "api_key": Config.SILICONFLOW_API_KEY,
+                        "api_key": api_key_v2,
                         "api_base": Config.SILICONFLOW_API_BASE,
                         "custom_llm_provider": "openai",
                     },
                 )
             )
+    if Config.SILICONFLOW_API_KEY_2:
+        model_4 = Config.MODEL_SILICONFLOW_4 or Config.MODEL_SILICONFLOW
+        model_5 = Config.MODEL_SILICONFLOW_5 or Config.MODEL_SILICONFLOW_2
+        model_6 = Config.MODEL_SILICONFLOW_6 or Config.MODEL_SILICONFLOW_3
+        specs.append(
+            (
+                "siliconflow4",
+                _strip_provider_prefix(model_4, "siliconflow"),
+                {
+                    "api_key": Config.SILICONFLOW_API_KEY_2,
+                    "api_base": Config.SILICONFLOW_API_BASE,
+                    "custom_llm_provider": "openai",
+                },
+            )
+        )
+        specs.append(
+            (
+                "siliconflow5",
+                _strip_provider_prefix(model_5, "siliconflow"),
+                {
+                    "api_key": Config.SILICONFLOW_API_KEY_2,
+                    "api_base": Config.SILICONFLOW_API_BASE,
+                    "custom_llm_provider": "openai",
+                },
+            )
+        )
+        specs.append(
+            (
+                "siliconflow6",
+                _strip_provider_prefix(model_6, "siliconflow"),
+                {
+                    "api_key": Config.SILICONFLOW_API_KEY_2,
+                    "api_base": Config.SILICONFLOW_API_BASE,
+                    "custom_llm_provider": "openai",
+                },
+            )
+        )
+    if Config.SILICONFLOW_API_KEY_3:
+        model_7 = Config.MODEL_SILICONFLOW_7 or Config.MODEL_SILICONFLOW
+        model_8 = Config.MODEL_SILICONFLOW_8 or Config.MODEL_SILICONFLOW_2
+        model_9 = Config.MODEL_SILICONFLOW_9 or Config.MODEL_SILICONFLOW_3
+        specs.append(
+            (
+                "siliconflow7",
+                _strip_provider_prefix(model_7, "siliconflow"),
+                {
+                    "api_key": Config.SILICONFLOW_API_KEY_3,
+                    "api_base": Config.SILICONFLOW_API_BASE,
+                    "custom_llm_provider": "openai",
+                },
+            )
+        )
+        specs.append(
+            (
+                "siliconflow8",
+                _strip_provider_prefix(model_8, "siliconflow"),
+                {
+                    "api_key": Config.SILICONFLOW_API_KEY_3,
+                    "api_base": Config.SILICONFLOW_API_BASE,
+                    "custom_llm_provider": "openai",
+                },
+            )
+        )
+        specs.append(
+            (
+                "siliconflow9",
+                _strip_provider_prefix(model_9, "siliconflow"),
+                {
+                    "api_key": Config.SILICONFLOW_API_KEY_3,
+                    "api_base": Config.SILICONFLOW_API_BASE,
+                    "custom_llm_provider": "openai",
+                },
+            )
+        )
     return specs
 
 

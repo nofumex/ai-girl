@@ -208,7 +208,15 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
             logger.info("Unread check: generated reply: %s", result[:100] if result else None)
 
             if not result:
-                result = "сейчас не могу ответить, потом напишу"
+                chat_name = getattr(entity, "title", getattr(entity, "first_name", f"chat {peer_id}"))
+                alert_msg = f"⚠️ LLM failed for unread messages in {chat_name}"
+                if Config.OWNER_ID:
+                    try:
+                        await client.send_message(Config.OWNER_ID, alert_msg)
+                        logger.info("Sent LLM failure alert to owner for unread in %s", peer_id)
+                    except Exception as alert_exc:
+                        logger.warning("Failed to send LLM failure alert to owner: %s", alert_exc)
+                continue
 
             max_msg_id = max(m.id for m in messages)
             min_msg_id = min(m.id for m in messages)
