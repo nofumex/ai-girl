@@ -70,8 +70,8 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
 
     for dialog in dialogs:
         try:
-            chat = dialog.chat
-            peer_id = chat.id if chat else None
+            entity = dialog.entity
+            peer_id = getattr(entity, "id", None)
             if not peer_id:
                 continue
 
@@ -79,19 +79,24 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
                 continue
             processed_chats.add(peer_id)
 
+            logger.info("Checking chat %s (%s)", peer_id, getattr(entity, "title", getattr(entity, "first_name", "?")))
+
             # Get the last message in the chat
             last_msg = None
             try:
                 async for msg in client.iter_messages(peer_id, limit=1):
                     last_msg = msg
-            except Exception:
+            except Exception as e:
+                logger.debug("Failed to get last msg for %s: %s", peer_id, e)
                 continue
 
             if not last_msg:
                 continue
 
             # Check if last message is from user (not from bot)
-            if getattr(last_msg, "out", False):
+            is_out = getattr(last_msg, "out", False)
+            logger.info("Chat %s: last_msg out=%s", peer_id, is_out)
+            if is_out:
                 # Last message is from bot - no need to respond
                 continue
 
