@@ -23,7 +23,7 @@ def _default_state() -> dict[str, Any]:
     return {
         "system_status": "ai" if Config.AUTO_START_ENABLED else "off",
         "context_mode": "default",
-        "static_message": "hey im kinda busy rn, text u later 💬",
+        "static_message": "щас занята, напишу позже",
         "ghost_mode": Config.GHOST_MODE_DEFAULT,
         "vip_list": [],
         "blacklist": [],
