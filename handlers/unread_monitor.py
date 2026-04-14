@@ -122,11 +122,11 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
 
             messages = []
             try:
-                async for msg in client.iter_messages(peer_id, limit=10):
+                async for msg in client.iter_messages(peer_id, limit=20):
                     if my_id and msg.from_id and msg.from_id == my_id:
-                        continue
+                        break
                     if getattr(msg, "out", False):
-                        continue
+                        break
                     if msg.action and hasattr(msg.action, "muted_members"):
                         continue
                     messages.append(msg)
