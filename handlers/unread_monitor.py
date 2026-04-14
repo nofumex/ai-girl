@@ -94,9 +94,9 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
                 continue
 
             # Check if last message is from user (not from bot)
-            is_out = getattr(last_msg, "out", False)
-            logger.info("Chat %s: last_msg out=%s", peer_id, is_out)
-            if is_out:
+            msg_from_me = my_id and last_msg.from_id == my_id if last_msg.from_id else getattr(last_msg, "out", False)
+            logger.info("Chat %s: last_msg from_me=%s", peer_id, msg_from_me)
+            if msg_from_me:
                 # Last message is from bot - no need to respond
                 continue
 
@@ -157,7 +157,9 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
             if not user_texts:
                 continue
 
+            logger.info("Calling wait_cooldown for chat %s", peer_id)
             await wait_cooldown(peer_id, peer_id, status)
+            logger.info("wait_cooldown returned for chat %s", peer_id)
 
             user_block = "\n".join(user_texts)
 
@@ -188,7 +190,7 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
                 schedule_header=schedule_header,
                 chat_history_lines=hist_for_user,
                 user_block_text=user_block,
-                chat_title=getattr(chat, "title", None),
+                chat_title=getattr(entity, "title", None),
                 is_private=True,
                 peer_name=sender_name,
                 reply_chain=None,
@@ -202,6 +204,7 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
             result = await complete_chat(
                 cast(Sequence[dict[str, MessageContent]], messages_for_llm),
             )
+            logger.info("Unread check: complete_chat returned for chat %s, result=%s", peer_id, result[:100] if result else None)
             logger.info("Unread check: generated reply: %s", result[:100] if result else None)
 
             if not result:
@@ -209,14 +212,19 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
 
             max_msg_id = max(m.id for m in messages)
             min_msg_id = min(m.id for m in messages)
+            logger.info("max_msg_id=%s, min_msg_id=%s for chat %s", max_msg_id, min_msg_id, peer_id)
 
             text = clean_telegram_garbage(result)
             text = maybe_apply_typos(text)
+            logger.info("After clean+typos for chat %s: %s", peer_id, text[:200])
             bubbles = split_bot_bubbles(text)
             if not bubbles:
+                logger.warning("No bubbles for chat %s, text=%s", peer_id, text[:200])
                 continue
 
+            logger.info("Sending %d bubbles to chat %s", len(bubbles), peer_id)
             for idx, chunk in enumerate(bubbles):
+                logger.info("Bubble %d for chat %s: %s", idx, peer_id, chunk[:100])
                 if idx:
                     await asyncio.sleep(0.5)
                 dur = await typing_duration_for_text(chunk)
@@ -226,7 +234,9 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
                 except Exception:
                     await asyncio.sleep(dur)
                 reply_to = min_msg_id if idx == 0 else None
+                logger.info("Sending message to %s: %s", peer_id, chunk)
                 await client.send_message(peer_id, chunk, reply_to=reply_to)
+                logger.info("Message sent to %s", peer_id)
 
             for bubble in bubbles:
                 history.append(peer_id, "assistant", bubble)
@@ -239,7 +249,7 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
             logger.info("Replied to unread messages in chat %s", peer_id)
 
         except Exception as exc:
-            logger.debug("Error processing dialog: %s", exc)
+            logger.warning("Error processing dialog %s: %s", peer_id, exc)
             continue
 
 
