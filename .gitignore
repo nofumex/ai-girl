@@ -1,0 +1,14 @@
+.env
+*.session
+*.session-journal
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+data/*.json
+!.gitkeep
+Super_telegram-main/
+TeleAgent-master/
+nul
+*.log
+.DS_Store
