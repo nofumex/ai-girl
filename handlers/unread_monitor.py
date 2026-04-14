@@ -44,11 +44,13 @@ _UNREAD_CHECK_INTERVAL = 60
 
 
 async def _check_and_respond_unread(client: TelegramClient) -> None:
-    """Check all dialogs for unread messages and respond to them."""
+    """Check all dialogs for messages without bot response and respond to them."""
     status = str(state.get("system_status", "off"))
     if status == "off" or bool(state.get("ghost_mode")):
         logger.debug("Skipping unread check: status=%s, ghost=%s", status, state.get("ghost_mode"))
         return
+
+    logger.info("Running unread check...")
 
     me = None
     my_id = None
@@ -73,13 +75,25 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
             if not peer_id:
                 continue
 
-            unread_count = getattr(dialog, "unread_count", 0)
-            if unread_count <= 0:
-                continue
-
             if peer_id in processed_chats:
                 continue
             processed_chats.add(peer_id)
+
+            # Get the last message in the chat
+            last_msg = None
+            try:
+                async for msg in client.iter_messages(peer_id, limit=1):
+                    last_msg = msg
+            except Exception:
+                continue
+
+            if not last_msg:
+                continue
+
+            # Check if last message is from user (not from bot)
+            if getattr(last_msg, "out", False):
+                # Last message is from bot - no need to respond
+                continue
 
             is_muted = getattr(dialog, "is_muted", None)
             if is_muted and callable(is_muted) and is_muted():
@@ -103,7 +117,7 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
 
             messages = []
             try:
-                async for msg in client.iter_messages(peer_id, limit=min(unread_count, 10)):
+                async for msg in client.iter_messages(peer_id, limit=10):
                     if my_id and msg.from_id and msg.from_id == my_id:
                         continue
                     if getattr(msg, "out", False):
@@ -118,7 +132,7 @@ async def _check_and_respond_unread(client: TelegramClient) -> None:
             if not messages:
                 continue
 
-            logger.info("Found %d unread messages in chat %s", len(messages), peer_id)
+            logger.info("Found %d new messages in chat %s", len(messages), peer_id)
 
             user_texts = []
             for msg in messages:
