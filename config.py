@@ -68,6 +68,8 @@ class Config:
     CEREBRAS_API_KEY: str | None = os.getenv("CEREBRAS_API_KEY")
     SILICONFLOW_API_KEY: str | None = os.getenv("SILICONFLOW_API_KEY")
 
+    LLM_PROXY: str | None = os.getenv("LLM_PROXY")
+
     # Gemini models with high throughput - use flash-lite for better rate limits
     MODEL_GEMINI: str = os.getenv("MODEL_GEMINI", "gemini/gemini-2.5-flash-lite")
     MODEL_GEMINI_2: str = os.getenv("MODEL_GEMINI_2", "gemini/gemini-2.5-flash-lite")

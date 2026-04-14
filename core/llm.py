@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
+import os
 import re
 import time
 from typing import Any, Sequence, Union
@@ -33,7 +34,21 @@ def _strip_provider_prefix(model: str, prefix: str) -> str:
     return model[len(wanted):] if model.startswith(wanted) else model
 
 
+def _base_kwargs() -> dict[str, Any]:
+    kwargs: dict[str, Any] = {}
+    if Config.LLM_PROXY:
+        kwargs["proxy"] = Config.LLM_PROXY
+        os.environ["HTTPS_PROXY"] = Config.LLM_PROXY
+        os.environ["HTTP_PROXY"] = Config.LLM_PROXY
+    return kwargs
+
+
+_llm_kwargs = {}
+
+
 def _provider_specs() -> list[tuple[str, str, dict[str, Any]]]:
+    global _llm_kwargs
+    _llm_kwargs = _base_kwargs()
     specs: list[tuple[str, str, dict[str, Any]]] = []
 
     if Config.GEMINI_API_KEY:
@@ -329,7 +344,7 @@ async def complete_chat(
                 temperature=temperature,
                 max_tokens=max_tokens,
                 timeout=Config.LLM_TIMEOUT_SECONDS,
-                **kwargs,
+                **{**kwargs, **_llm_kwargs},
             )
             logger.info("Response from %s: type=%s, raw=%s", label, type(response), str(response)[:200])
             content = _extract_content(response)
@@ -358,7 +373,7 @@ async def complete_chat(
                         temperature=temperature,
                         max_tokens=max_tokens,
                         timeout=Config.LLM_TIMEOUT_SECONDS,
-                        **kwargs,
+                        **{**kwargs, **_llm_kwargs},
                     )
                     content = _extract_content(response)
                     await _mark_provider_ok(label)
@@ -393,7 +408,7 @@ async def complete_chat(
                     temperature=temperature,
                     max_tokens=max_tokens,
                     timeout=Config.LLM_TIMEOUT_SECONDS,
-                    **kwargs,
+                    **{**kwargs, **_llm_kwargs},
                 )
                 content = _extract_content(response)
                 await _mark_provider_ok(label)
